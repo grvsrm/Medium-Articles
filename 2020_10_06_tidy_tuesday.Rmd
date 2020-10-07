@@ -1,0 +1,76 @@
+---
+title: "TidyTemplate"
+date: 2020-10-06
+output: html_output
+editor_options: 
+  chunk_output_type: console
+---
+
+# TidyTuesday
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, cache = T,
+                      warning = FALSE, message = FALSE,
+                      dpi = 180, fig.width = 8, fig.height = 5)
+
+library(tidyverse)
+library(tidytuesdayR)
+library(scales)
+theme_set(theme_light())
+```
+
+```{r}
+tt <- tt_load("2018-12-04")
+medium_dataset <- tt$medium_datasci
+```
+
+```{r}
+medium_processed <- medium_dataset %>% 
+    select(-x1)
+```
+
+```{r}
+medium_gathered <- medium_processed %>% 
+    pivot_longer(tag_ai:tag_machine_learning, names_to = "tag", values_to = "value") %>% 
+    mutate(tag = str_remove(tag, "tag_")) %>% 
+    filter(value>0)
+
+medium_gathered %>% 
+    group_by(tag) %>% 
+    summarise(total = sum(value),
+              claps = sum(claps)) %>% 
+    arrange(-total)
+
+medium_gathered %>% 
+    count(tag, sort = T)
+```
+
+```{r}
+medium_gathered %>% 
+    group_by(tag) %>% 
+    summarise(claps = median(claps)) %>% 
+    arrange(-claps)
+```
+
+```{r}
+medium_gathered %>% 
+    ggplot(aes(claps)) +
+    geom_histogram() +
+    scale_x_log10(labels = comma_format())
+```
+
+```{r}
+medium_gathered %>% 
+    mutate(reading_time = pmin(10, reading_time)) %>% 
+    ggplot(aes(reading_time)) +
+    geom_histogram() +
+    scale_x_continuous(breaks = seq(2,10,2),
+                       labels = c(seq(2,8,2), "10+"))
+```
+
+```{r}
+
+```
+
